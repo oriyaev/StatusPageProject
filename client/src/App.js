@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import './App.css';
 
 function App() {
-  const [inputValue, setInputValue] = useState('');
+  const [inputStatusValue, setInputStatusValue] = useState('');
   const [statuses, setStatuses] = useState([]);
 
-  const handleStatuses = (method, headers, body) => {
-    console.error(method, headers, body);
-    return fetch('/handleStatuses', {
+  const [inputNameValue, setInputNameValue] = useState('');
+  const [statusFrom, setStatusFromValue] = useState(statuses[0]);
+  const [statusTo, setStatusToValue] = useState(statuses[0]);
+  const [transitions, setTransitions] = useState([]);
+
+  const handleStatuses = (path, method, headers, body) => {
+    console.error(path, method, headers, body);
+    return fetch(path, {
       method: method,
       headers: headers,
       body: body
@@ -25,7 +30,7 @@ function App() {
   };
 
   const fetchStatuses = () => {
-    handleStatuses("GET", { 'Content-Type': 'application/json' }, undefined)
+    handleStatuses("/handleStatuses", "GET", { 'Content-Type': 'application/json' }, undefined)
       .then(data => {
         console.error("data", data);
         setStatuses(data["statuses"]);
@@ -35,13 +40,38 @@ function App() {
       });
   };
 
+  const fetchTransitions = () => {
+    handleStatuses("/handleNames", "GET", { 'Content-Type': 'application/json' }, undefined)
+      .then(data => {
+        console.error("data", data);
+        setTransitions(data["names"]);
+      })
+      .catch(error => {
+        console.error('Error fetching transitions:', error);
+      });
+  };
+
   const addStatus = () => {
-    if (inputValue.trim() !== '') {
-      handleStatuses("POST", { 'Content-Type': 'application/json' }, JSON.stringify({ status: inputValue }))
+    if (inputStatusValue.trim() !== '') {
+      handleStatuses("/handleStatuses", "POST", { 'Content-Type': 'application/json' }, JSON.stringify({ status: inputStatusValue }))
         .then(response => {
           console.error("test");
           fetchStatuses();
-          setInputValue("");
+          setInputStatusValue("");
+        })
+        .catch(error => {
+          console.error('Error adding status:', error);
+        });
+    }
+  };
+
+  const addTransition = () => {
+    if (inputNameValue.trim() !== "") {
+     handleStatuses("/handleNames", "POST", { 'Content-Type': 'application/json' }, JSON.stringify({ name: inputNameValue, "from_status": statusFrom, "to_status": statusTo }))
+        .then(response => {
+          console.error("test");
+          fetchTransitions();
+          setInputNameValue("");
         })
         .catch(error => {
           console.error('Error adding status:', error);
@@ -50,7 +80,7 @@ function App() {
   };
 
   const removeAllStatuses = () => {
-    handleStatuses("DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: true }))
+    handleStatuses("/handleStatuses", "DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: true }))
       .then(() => fetchStatuses())
       .catch(error => {
         console.error('Error removing all statuses:', error);
@@ -58,7 +88,7 @@ function App() {
   };
 
   const removeStatus = (status) => {
-    handleStatuses("DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: false, status: status }))
+    handleStatuses("/handleStatuses", "DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: false, status: status }))
       .then(() => fetchStatuses())
       .catch(error => {
         console.error('Error removing all statuses:', error);
@@ -66,23 +96,70 @@ function App() {
   };
 
   return (
-    <div>
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-      />
-      <button onClick={addStatus}>Add</button>
-      <button onClick={removeAllStatuses} className="redButton">Remove All</button>
-      <ul>
-        {statuses.map((status, index) => (
-          <li key={index}>
-            {status}
-            <button onClick={() => removeStatus(status)} className="removeButton">Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <div className="wrapperDiv">
+        <div className="sectionDiv">
+          <text className="sectionTitle">Add Input</text>
+          <br/>
+          <div className="input">
+              <input
+                type="text"
+                value={inputStatusValue}
+                onChange={(e) => setInputStatusValue(e.target.value)}
+              />
+              <button onClick={addStatus}>Add</button>
+          </div>
+          <button onClick={removeAllStatuses} className="redButton">Remove All</button>
+          <ul>
+            {statuses.map((status, index) => (
+              <li key={index}>
+                {status}
+                <button onClick={() => removeStatus(status)} className="removeButton">Delete</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="sectionDiv">
+           <text className="sectionTitle">Add Transition</text>
+          <br/>
+          <div className="transitionDiv">
+            <form>
+              <input
+                type="text"
+                value={inputNameValue}
+                onChange={(e) => setInputNameValue(e.target.value)}
+               />
+                <label>
+                  From:
+                  <select className="dropdown" defaultValue={statuses[0]} onChange={(e) => setStatusFromValue(e.target.value)}>
+                    {statuses.map((status, index) => (
+                      <option key={index} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  To:
+                  <select className="dropdown" defaultValue={statuses[0]} onChange={(e) => setStatusToValue(e.target.value)}>
+                    {statuses.map((status, index) => (
+                      <option key={index} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button onClick={addTransition}>Add</button>
+              </form>
+          </div>
+          <ul>
+            {transitions.map((transition, index) => (
+              <li key={index}>
+                {transition["name"]}: transition["from_status"] -> transition["to_status"]
+              </li>
+            ))}
+          </ul>
+        </div>
+     </div>
   );
 }
 

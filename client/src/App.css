@@ -46,7 +46,7 @@
   border: none;
   border-radius: 5px;
   position: fixed;
-  bottom: 150px;
+  bottom: 350px;
   left: 50px;
 }
 
@@ -61,8 +61,36 @@
   position: fixed;
 }
 
-.listValue {
+.sectionTitle {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 0px;
+}
 
+.transitionDiv {
+    display: flex;
+    flex-direction: row;
+}
+
+.dropdown {
+    width: 70px;
+}
+
+.sectionDiv {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+}
+
+.wrapperDiv {
+    display: flex;
+    flex-direction: row;
+}
+
+.input {
+    display: flex;
+    flex-direction: row;
+    width: 100px;
 }
 
 .inputBox {
