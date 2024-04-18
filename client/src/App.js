@@ -6,8 +6,8 @@ function App() {
   const [statuses, setStatuses] = useState([]);
 
   const [inputNameValue, setInputNameValue] = useState('');
-  const [statusFrom, setStatusFromValue] = useState(statuses[0]);
-  const [statusTo, setStatusToValue] = useState(statuses[0]);
+  const [statusFrom, setStatusFromValue] = useState('');
+  const [statusTo, setStatusToValue] = useState('');
   const [transitions, setTransitions] = useState([]);
 
   const handleStatuses = (path, method, headers, body) => {
@@ -41,21 +41,20 @@ function App() {
   };
 
   const fetchTransitions = () => {
-    handleStatuses("/handleNames", "GET", { 'Content-Type': 'application/json' }, undefined)
-      .then(data => {
-        console.error("data", data);
-        setTransitions(data["names"]);
-      })
-      .catch(error => {
-        console.error('Error fetching transitions:', error);
-      });
+  handleStatuses("/handleNames", "GET", { 'Content-Type': 'application/json' }, undefined)
+    .then(data => {
+      console.error("trans", data);
+      setTransitions(data["names"]);
+    })
+    .catch(error => {
+      console.error('Error fetching transitions:', error);
+    });
   };
 
   const addStatus = () => {
     if (inputStatusValue.trim() !== '') {
       handleStatuses("/handleStatuses", "POST", { 'Content-Type': 'application/json' }, JSON.stringify({ status: inputStatusValue }))
         .then(response => {
-          console.error("test");
           fetchStatuses();
           setInputStatusValue("");
         })
@@ -65,19 +64,27 @@ function App() {
     }
   };
 
-  const addTransition = () => {
-    if (inputNameValue.trim() !== "") {
-     handleStatuses("/handleNames", "POST", { 'Content-Type': 'application/json' }, JSON.stringify({ name: inputNameValue, "from_status": statusFrom, "to_status": statusTo }))
-        .then(response => {
-          console.error("test");
-          fetchTransitions();
-          setInputNameValue("");
-        })
-        .catch(error => {
-          console.error('Error adding status:', error);
-        });
-    }
-  };
+   const addTransition = (e) => {
+      e.preventDefault();
+
+      if (inputNameValue.trim() !== "" && statusFrom && statusTo) {
+        const requestBody = {
+          name: inputNameValue,
+          from_status: statusFrom,
+          to_status: statusTo
+        };
+
+        handleStatuses("/handleNames", "POST", { 'Content-Type': 'application/json' }, JSON.stringify(requestBody))
+          .then(response => {
+            fetchTransitions();
+            console.error("test");
+            setInputNameValue("");
+          })
+          .catch(error => {
+            console.error('Error adding transition:', error);
+          });
+      }
+   };
 
   const removeAllStatuses = () => {
     handleStatuses("/handleStatuses", "DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: true }))
@@ -85,13 +92,19 @@ function App() {
       .catch(error => {
         console.error('Error removing all statuses:', error);
       });
+
+    handleStatuses("/handleNames", "DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: true }))
+      .then(() => fetchTransitions())
+      .catch(error => {
+        console.error('Error removing all transitions:', error);
+      });
   };
 
   const removeStatus = (status) => {
     handleStatuses("/handleStatuses", "DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: false, status: status }))
       .then(() => fetchStatuses())
       .catch(error => {
-        console.error('Error removing all statuses:', error);
+        console.error('Error removing status:', error);
       });
   };
 
@@ -148,13 +161,13 @@ function App() {
                     ))}
                   </select>
                 </label>
-                <button onClick={addTransition}>Add</button>
+                <button onClick={(e) => addTransition(e)}>Add</button>
               </form>
           </div>
           <ul>
             {transitions.map((transition, index) => (
               <li key={index}>
-                {transition["name"]}: transition["from_status"] -> transition["to_status"]
+                {transition["name"]}: {transition["from_status"]} -> {transition["to_status"]}
               </li>
             ))}
           </ul>
