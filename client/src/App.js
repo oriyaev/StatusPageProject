@@ -1,24 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 function App() {
   const [inputValue, setInputValue] = useState('');
   const [statuses, setStatuses] = useState([]);
 
-  useEffect(() => {
-    fetchStatuses();
-  }, []);
-
-  const fetchStatuses = () => {
-    fetch('/statusPage')
+  const handleStatuses = (method, headers, body) => {
+    console.error(method, headers, body);
+    return fetch('/handleStatuses', {
+      method: method,
+      headers: headers,
+      body: body
+    })
       .then(response => {
+        console.error("res", response);
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        return response.json();
+        return response.json(); // Parse response body as JSON
       })
+      .catch(error => {
+        console.error('Error adding status:', error);
+      });
+  };
+
+  const fetchStatuses = () => {
+    handleStatuses("GET", { 'Content-Type': 'application/json' }, undefined)
       .then(data => {
-        setStatuses(data.statuses);
+        console.error("data", data);
+        setStatuses(data["statuses"]);
       })
       .catch(error => {
         console.error('Error fetching statuses:', error);
@@ -27,23 +37,11 @@ function App() {
 
   const addStatus = () => {
     if (inputValue.trim() !== '') {
-      fetch('/statusPage', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ status: inputValue })
-      })
+      handleStatuses("POST", { 'Content-Type': 'application/json' }, JSON.stringify({ status: inputValue }))
         .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log(data);
+          console.error("test");
           fetchStatuses();
-          setInputValue('');
+          setInputValue("");
         })
         .catch(error => {
           console.error('Error adding status:', error);
@@ -52,7 +50,19 @@ function App() {
   };
 
   const removeAllStatuses = () => {
-    setStatuses([]);
+    handleStatuses("DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: true }))
+      .then(() => fetchStatuses())
+      .catch(error => {
+        console.error('Error removing all statuses:', error);
+      });
+  };
+
+  const removeStatus = (status) => {
+    handleStatuses("DELETE", { 'Content-Type': 'application/json' }, JSON.stringify({ shouldResetAll: false, status: status }))
+      .then(() => fetchStatuses())
+      .catch(error => {
+        console.error('Error removing all statuses:', error);
+      });
   };
 
   return (
@@ -66,7 +76,10 @@ function App() {
       <button onClick={removeAllStatuses} className="redButton">Remove All</button>
       <ul>
         {statuses.map((status, index) => (
-          <li key={index}>{status}</li>
+          <li key={index}>
+            {status}
+            <button onClick={() => removeStatus(status)} className="removeButton">Delete</button>
+          </li>
         ))}
       </ul>
     </div>

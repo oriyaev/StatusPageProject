@@ -46,6 +46,33 @@
   border: none;
   border-radius: 5px;
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 150px;
+  left: 50px;
+}
+
+.removeButton {
+  background-color: red;
+  color: white;
+  width: 60px; /* Adjust width as needed */
+  height: 15px; /* Adjust height as needed */
+  font-size: 10px; /* Adjust font size as needed */
+  border: none;
+  border-radius: 5px;
+  position: fixed;
+}
+
+.listValue {
+
+}
+
+.inputBox {
+  background-color: white;
+  color: black;
+  width: 200px; /* Adjust width as needed */
+  height: 50px; /* Adjust height as needed */
+  font-size: 18px; /* Adjust font size as needed */
+  border: none;
+  border-radius: 5px;
+  position: fixed;
+  left: 50px;
 }
