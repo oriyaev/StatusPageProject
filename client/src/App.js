@@ -4,7 +4,6 @@ import './App.css';
 function App() {
   const [inputStatusValue, setInputStatusValue] = useState('');
   const [statuses, setStatuses] = useState([]);
-
   const [inputNameValue, setInputNameValue] = useState('');
   const [statusFrom, setStatusFromValue] = useState('');
   const [statusTo, setStatusToValue] = useState('');
@@ -108,6 +107,31 @@ function App() {
       });
   };
 
+  const getStatusLabel = (status) => {
+      const labels = ["init", "orphan", "final"];
+      if (statuses.indexOf(status) === 0) {
+        return labels[0];
+      }
+      else {
+        let count = 0;
+        for (const transition of transitions) {
+          if (status === transition.from_status || status === transition.to_status) {
+            count++;
+          }
+        }
+        if (count === 1) {
+          return labels[2];
+        }
+        else if (count > 1) {
+          return "";
+        }
+        else {
+          return `${labels[1]} ${labels[2]}`;
+        }
+      }
+  };
+
+
   return (
     <div className="wrapperDiv">
         <div className="sectionDiv">
@@ -123,13 +147,13 @@ function App() {
           </div>
           <button onClick={removeAllStatuses} className="redButton">Remove All</button>
           <ul>
-            {statuses.map((status, index) => (
-              <li key={index}>
-                {status}
-                <button onClick={() => removeStatus(status)} className="removeButton">Delete</button>
-              </li>
-            ))}
-          </ul>
+          {statuses.map((status, index) => (
+            <li key={index}>
+              {status} <span>({getStatusLabel(status)})</span>
+              <button onClick={() => removeStatus(status)} className="removeButton">Delete</button>
+            </li>
+          ))}
+         </ul>
         </div>
         <div className="sectionDiv">
            <text className="sectionTitle">Add Transition</text>
@@ -145,7 +169,7 @@ function App() {
                   From:
                   <select className="dropdown" defaultValue={statuses[0]} onChange={(e) => setStatusFromValue(e.target.value)}>
                     {statuses.map((status, index) => (
-                      <option key={index} value={status}>
+                      <option key={index} value={status} disabled={getStatusLabel(status) === ""}>
                         {status}
                       </option>
                     ))}
@@ -155,7 +179,7 @@ function App() {
                   To:
                   <select className="dropdown" defaultValue={statuses[0]} onChange={(e) => setStatusToValue(e.target.value)}>
                     {statuses.map((status, index) => (
-                      <option key={index} value={status}>
+                      <option key={index} value={status} disabled={getStatusLabel(status) === ""}>
                         {status}
                       </option>
                     ))}
